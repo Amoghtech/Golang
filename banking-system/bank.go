@@ -1,35 +1,15 @@
 package main
 
 import (
-	"errors"
+	"example.com/banking-system/fileops"
 	"fmt"
-	"os"
-	"strconv"
+	"github.com/Pallinder/go-randomdata"
 )
 
 const accountBalanceFile string = "balance.txt"
 
-func getBalanceFromnFile() (float64, error) {
-	data, err := os.ReadFile(accountBalanceFile)
-	if err != nil {
-		return 1000, errors.New("Failed to Read File")
-	}
-	balanceText := string(data)
-	balance, err := strconv.ParseFloat(balanceText, 64)
-
-	if err != nil {
-		return 1000, errors.New("Failed to parse stored Balance value")
-	}
-	return balance, nil
-}
-
-func writeBalanceToFile(balance float64) {
-	balanceText := fmt.Sprint(balance)
-	os.WriteFile(accountBalanceFile, []byte(balanceText), 0644)
-}
-
 func main() {
-	var accountBalance, err = getBalanceFromnFile()
+	var accountBalance, err = fileops.GetFloatFromnFile(accountBalanceFile)
 
 	if err != nil {
 		fmt.Println("ERROR")
@@ -38,21 +18,18 @@ func main() {
 		panic("Can't Continue. sorry")
 	}
 
+	fmt.Println("Welcome to Go Bank!")
+	fmt.Println("React Us 24/7 at ", randomdata.PhoneNumber())
 	for {
-		fmt.Println("Welcome to Go Bank!")
-		fmt.Println("What do you want to do?")
-		fmt.Println("1. Check Balance")
-		fmt.Println("2. Deposit Money")
-		fmt.Println("3. Withdraw Money")
-		fmt.Println("4. Exit")
+		presentOptions()
 
 		var choice int
 		fmt.Print("Your choice: ")
 		fmt.Scan(&choice)
 
-		if(choice <= 0) {
+		if choice <= 0 {
 			fmt.Println("Invaid input, choice must be grater than 0")
-			continue;
+			continue
 		}
 		switch choice {
 		case 1:
@@ -69,7 +46,7 @@ func main() {
 
 			accountBalance += depositAmount
 			fmt.Println("Balance updated! New amount:", accountBalance)
-			writeBalanceToFile(accountBalance)
+			fileops.WriteFloatToFile(accountBalance, accountBalanceFile)
 		case 3:
 			fmt.Println("Your Withdraw: ")
 			var withdrawAmount float64
@@ -87,7 +64,7 @@ func main() {
 
 			accountBalance -= withdrawAmount
 			fmt.Println("Balance updated! New amount:", accountBalance)
-			writeBalanceToFile(accountBalance)
+			fileops.WriteFloatToFile(accountBalance, accountBalanceFile)
 		default:
 			fmt.Println("Goodbye!")
 			return
