@@ -1,9 +1,11 @@
 package prices
 
 import (
+	"errors"
+	"fmt"
+
 	"example.com/price-calculator/conversion"
 	"example.com/price-calculator/iomanager"
-	"fmt"
 )
 
 type TaxIncludedPriceJob struct {
@@ -13,10 +15,13 @@ type TaxIncludedPriceJob struct {
 	iomanager.IOManager `json:"-"`
 }
 
-func (job *TaxIncludedPriceJob) Process() error {
+func (job *TaxIncludedPriceJob) Process(doneChan chan bool, errorChan chan error) {
 	err := job.loadData()
+
+	errorChan <- errors.New("Error occurred")
 	if err != nil {
-		return err
+		errorChan <- err
+		return
 	}
 	result := map[string]string{}
 	for _, price := range job.InputPrices {
@@ -25,7 +30,8 @@ func (job *TaxIncludedPriceJob) Process() error {
 	}
 	job.TaxIncludedPrices = result
 	job.WriteResult(job)
-	return nil
+	doneChan <- true
+	close(errorChan)
 }
 
 func NewTaxIncludedPriceJob(iom iomanager.IOManager, taxRate float64) *TaxIncludedPriceJob {
